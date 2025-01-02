@@ -1,0 +1,281 @@
+[gd_scene load_steps=13 format=3 uid="uid://betedhxnvyt5x"]
+
+[ext_resource type="Texture2D" uid="uid://t7jabisvcs45" path="res://Road.png" id="1_fbgwo"]
+[ext_resource type="PackedScene" uid="uid://c00afej06a70s" path="res://Car.tscn" id="2_a4p8f"]
+[ext_resource type="PackedScene" uid="uid://b6ox0vnbaxd8a" path="res://coupe.tscn" id="3_5t4t6"]
+[ext_resource type="PackedScene" uid="uid://c4b4y2tmes76n" path="res://sedan.tscn" id="3_6j3sk"]
+[ext_resource type="PackedScene" uid="uid://6iwsnb5u7612" path="res://muscle.tscn" id="3_soqok"]
+[ext_resource type="PackedScene" uid="uid://uk32et3remtw" path="res://taxi.tscn" id="4_mo1cv"]
+[ext_resource type="Texture2D" uid="uid://cl8dch63b7ut5" path="res://Footer.png" id="7_swo0a"]
+[ext_resource type="Texture2D" uid="uid://2itdeehpugat" path="res://Game Over.png" id="8_a0v2a"]
+[ext_resource type="Texture2D" uid="uid://cnr6mbk8wdb83" path="res://playAgain.png" id="9_2htcu"]
+[ext_resource type="FontFile" uid="uid://6s72al58lva5" path="res://Koulen.ttf" id="10_pucrk"]
+
+[sub_resource type="GDScript" id="GDScript_151dw"]
+resource_name = "Game"
+script/source = "extends Node2D
+
+@export var sedan : PackedScene
+@export var coupe : PackedScene
+@export var muscle : PackedScene
+@export var taxi : PackedScene
+@export var lanes : Array
+
+
+var traffic
+var speeds
+var cars_on_track
+var score
+var over
+var scorenum
+
+@export var last_position = 350
+
+@export var traffic_speed = 2
+var timer
+var seconds
+var y = 50
+var x = 48
+
+var num = 1
+
+func startGame():
+	for i in cars_on_track:
+		if i !=null:
+			free_car(i)
+	score = 0
+	timer = 0
+	over = false
+	
+	$Car.position = Vector2(120, 250)
+	scorenum = \"[center][font=Koulen.ttf]\" + \"0\" + \"[/font][/center]\"
+	$Footer/ScoreNum.text = scorenum
+	
+	
+func _ready():
+	cars_on_track = []
+	traffic = [sedan,coupe,muscle,taxi]
+	speeds = [2]
+
+	startGame()
+	
+func spawn_car():
+	var spawned = traffic.pick_random().instantiate()
+	$TrafficCars.add_child(spawned)
+	spawned.set_position(lanes.pick_random())
+	add_child(spawned)
+	cars_on_track.append(spawned)
+	
+func _process(delta):
+	if not over:
+		timer += 1
+		seconds = timer/60
+		if seconds == traffic_speed:
+			spawn_car()
+			timer = 0
+	if not over:
+		for i in cars_on_track:
+			if i != null:
+				if i.position.y >= last_position:
+					free_car(i)
+					score += 1
+					scorenum = \"[center][font=Koulen.ttf]\" + str(score) + \"[/font][/center]\"
+					$Footer/ScoreNum.text = scorenum
+	
+	
+func free_car(i):
+	
+		cars_on_track.remove_at(cars_on_track.find(i))
+		i.queue_free()
+		
+
+	 # Replace with function body.
+func game_over():
+	over = true
+	print(\"Game Over : \" , score)
+	$Car.collider.speed = 0
+	$Control/GameOver/Score.text = \"[center][font=Koulen.ttf]\" + str(score) + \"[/font][/center]\"
+	$Control/GameOver.show()
+
+
+func _on_car_collided():
+	if not over:
+		game_over()# Replace with function body.
+	
+
+
+
+func _on_button_pressed():
+	for i in cars_on_track:
+		if i !=null:
+			free_car(i)
+	$Control/GameOver.hide()
+	startGame() # Replace with function body.
+
+
+func _on_button_focus_entered():
+	$Control/GameOver/Button/playAgain.add_theme_color_override(\"font_color\", \"yellow\") # Replace with function body.
+"
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_qvsgw"]
+distance = -322.0
+
+[node name="Level" type="Node2D"]
+script = SubResource("GDScript_151dw")
+sedan = ExtResource("3_6j3sk")
+coupe = ExtResource("3_5t4t6")
+muscle = ExtResource("3_soqok")
+taxi = ExtResource("4_mo1cv")
+lanes = [Vector2(24, -50), Vector2(72, -50), Vector2(122, -50), Vector2(166, -50)]
+traffic_speed = 1
+
+[node name="Road" type="Sprite2D" parent="."]
+texture = ExtResource("1_fbgwo")
+centered = false
+
+[node name="TrafficCars" type="Node2D" parent="."]
+
+[node name="Footer" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_top = 321.0
+offset_right = 192.0
+offset_bottom = 381.0
+
+[node name="FooterSprite" type="Sprite2D" parent="Footer"]
+visibility_layer = 3
+texture_filter = 1
+texture = ExtResource("7_swo0a")
+centered = false
+
+[node name="ScoreLabel" type="RichTextLabel" parent="Footer"]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -95.0
+offset_top = -28.0
+offset_right = 95.0
+offset_bottom = 29.0
+grow_horizontal = 2
+grow_vertical = 2
+bbcode_enabled = true
+text = "[center][font=\"Koulen.ttf\"]Score[/font][center]"
+
+[node name="ScoreNum" type="RichTextLabel" parent="Footer"]
+layout_mode = 1
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -96.0
+offset_top = 20.0
+offset_right = 96.0
+offset_bottom = 17.0
+grow_horizontal = 2
+grow_vertical = 2
+bbcode_enabled = true
+text = "[center][font=Koulen.ttf]0[/font][/center]"
+
+[node name="Car" parent="." instance=ExtResource("2_a4p8f")]
+position = Vector2(94, 270)
+scale = Vector2(0.6, 0.6)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 2
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(100, 0)
+shape = SubResource("WorldBoundaryShape2D_qvsgw")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 55.0
+offset_top = 83.0
+offset_right = 144.0
+offset_bottom = 192.0
+size_flags_horizontal = 4
+
+[node name="GameOver" type="CanvasLayer" parent="Control"]
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/GameOver"]
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -54.5
+offset_top = -118.0
+offset_right = 54.5
+offset_bottom = -118.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+
+[node name="Sprite2D" type="Sprite2D" parent="Control/GameOver/HBoxContainer"]
+position = Vector2(57.5, 256)
+texture = ExtResource("8_a0v2a")
+
+[node name="Score" type="RichTextLabel" parent="Control/GameOver"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -41.0
+offset_top = -63.0
+offset_right = 48.0
+offset_bottom = -33.0
+grow_horizontal = 2
+grow_vertical = 2
+bbcode_enabled = true
+text = "[center][font=Koulen.ttf]24[/font][/center]"
+
+[node name="GameOver" type="RichTextLabel" parent="Control/GameOver"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -41.0
+offset_top = -80.0
+offset_right = 48.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 2
+bbcode_enabled = true
+text = "[center][font=Koulen.ttf]Game OVER[/font][/center]"
+
+[node name="Button" type="TextureButton" parent="Control/GameOver"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -26.0
+offset_top = -30.0
+offset_right = 34.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture_normal = ExtResource("9_2htcu")
+
+[node name="playAgain" type="Label" parent="Control/GameOver/Button"]
+layout_mode = 0
+offset_left = 1.0
+offset_right = 59.0
+offset_bottom = 23.0
+theme_override_fonts/font = ExtResource("10_pucrk")
+theme_override_font_sizes/font_size = 12
+text = "Play again"
+horizontal_alignment = 1
+
+[connection signal="collided" from="Car" to="." method="_on_car_collided"]
+[connection signal="focus_entered" from="Control/GameOver/Button" to="." method="_on_button_focus_entered"]
+[connection signal="pressed" from="Control/GameOver/Button" to="." method="_on_button_pressed"]

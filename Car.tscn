@@ -1,0 +1,150 @@
+[gd_scene load_steps=17 format=3 uid="uid://c00afej06a70s"]
+
+[ext_resource type="Texture2D" uid="uid://rn5xkpl0114w" path="res://White_LUXURY_CLEAN_NORTH_000-sheet.png" id="1_oco6g"]
+
+[sub_resource type="GDScript" id="GDScript_1tamh"]
+resource_name = "Car"
+script/source = "extends CharacterBody2D
+
+signal collided
+
+@export var speed = 200
+@export var collider : PhysicsBody2D
+
+func _physics_process(delta):
+	var input_vector = Vector2.ZERO
+	
+	if Input.is_action_pressed(\"Right\"):
+		input_vector.x += 1
+	if Input.is_action_pressed(\"Left\"):
+		input_vector.x -= 1
+	if Input.is_action_pressed(\"Up\"):
+		input_vector.y -= 1
+	if Input.is_action_pressed(\"Down\"):
+		input_vector.y += 1
+	
+	# This line is crucial for four-way movement
+	if input_vector.x != 0:
+		input_vector.y = 0
+	elif input_vector.y != 0:
+		input_vector.x = 0
+	
+	velocity = input_vector * speed
+	var collision = move_and_slide()
+	if collision:
+		collider = get_last_slide_collision().get_collider()
+		if collider is RigidBody2D:
+			collided.emit()
+	
+"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5bsrl"]
+atlas = ExtResource("1_oco6g")
+region = Rect2(0, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sh411"]
+atlas = ExtResource("1_oco6g")
+region = Rect2(100, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_th1b7"]
+atlas = ExtResource("1_oco6g")
+region = Rect2(200, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4dqal"]
+atlas = ExtResource("1_oco6g")
+region = Rect2(300, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_htl3g"]
+atlas = ExtResource("1_oco6g")
+region = Rect2(0, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u7qi6"]
+atlas = ExtResource("1_oco6g")
+region = Rect2(100, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_07eyc"]
+atlas = ExtResource("1_oco6g")
+region = Rect2(200, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n05fg"]
+atlas = ExtResource("1_oco6g")
+region = Rect2(300, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x47al"]
+atlas = ExtResource("1_oco6g")
+region = Rect2(0, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7awvs"]
+atlas = ExtResource("1_oco6g")
+region = Rect2(100, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lfa50"]
+atlas = ExtResource("1_oco6g")
+region = Rect2(200, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_brps1"]
+atlas = ExtResource("1_oco6g")
+region = Rect2(300, 200, 100, 100)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_offof"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5bsrl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sh411")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_th1b7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4dqal")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_htl3g")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u7qi6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_07eyc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n05fg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_x47al")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7awvs")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lfa50")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_brps1")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_radiv"]
+size = Vector2(29.3701, 96.6019)
+
+[node name="TheCar" type="CharacterBody2D"]
+scale = Vector2(0.5, 0.5)
+collision_layer = 3
+collision_mask = 3
+motion_mode = 1
+script = SubResource("GDScript_1tamh")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_offof")
+autoplay = "default"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 3.74444)
+scale = Vector2(1.22574, 0.750618)
+shape = SubResource("RectangleShape2D_radiv")

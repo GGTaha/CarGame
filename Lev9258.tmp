@@ -1,0 +1,81 @@
+[gd_scene load_steps=5 format=3 uid="uid://betedhxnvyt5x"]
+
+[ext_resource type="Texture2D" uid="uid://t7jabisvcs45" path="res://Road.png" id="1_fbgwo"]
+[ext_resource type="PackedScene" uid="uid://c00afej06a70s" path="res://Car.tscn" id="2_a4p8f"]
+[ext_resource type="PackedScene" uid="uid://c4b4y2tmes76n" path="res://sedan.tscn" id="3_6j3sk"]
+
+[sub_resource type="GDScript" id="GDScript_151dw"]
+resource_name = "Game"
+script/source = "extends Node2D
+
+@export var sedan : PackedScene
+
+var traffic
+var lanes 
+var speeds
+var cars_on_track
+
+@export var last_position = 350
+
+@export var traffic_speed = 2
+var timer
+var seconds
+
+func _ready():
+	timer = 0
+	
+	traffic = [sedan]
+	lanes = [$Lane1,$Lane2,$Lane3,$Lane4]
+	speeds = [2]
+
+	cars_on_track = []
+	
+	
+func spawn_car():
+	var spawned = traffic.pick_random().instantiate()
+	add_child(spawned)
+	spawned.position = lanes.pick_random().position
+	cars_on_track.append(spawned)
+	
+	
+func _process(delta):
+	timer += 1
+	seconds = timer/60
+	if seconds == traffic_speed:
+		spawn_car()
+		timer = 0
+	print(seconds)
+	print(cars_on_track)
+	for i in cars_on_track:
+		i.position.y += speeds.pick_random()
+		if i.position.y >= last_position:
+			cars_on_track.remove_at(cars_on_track.find(i))
+			i.queue_free()
+	
+
+
+"
+
+[node name="Level" type="Node2D"]
+script = SubResource("GDScript_151dw")
+sedan = ExtResource("3_6j3sk")
+
+[node name="Road" type="Sprite2D" parent="."]
+position = Vector2(120, 160)
+texture = ExtResource("1_fbgwo")
+
+[node name="CharacterBody2D" parent="." instance=ExtResource("2_a4p8f")]
+position = Vector2(121, 274)
+scale = Vector2(0.6, 0.6)
+
+[node name="Lane1" type="Marker2D" parent="."]
+position = Vector2(48, -50)
+
+[node name="Lane2" type="Marker2D" parent="."]
+position = Vector2(96, -50)
+
+[node name="Lane3" type="Marker2D" parent="."]
+position = Vector2(192, -50)
+
+[node name="Lane4" type="Marker2D" parent="."]
+position = Vector2(144, -50)
